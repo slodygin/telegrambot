@@ -1,1 +1,1 @@
-from . import user, admin, other  # noqa: I001
+from . import user, admin  # noqa: I001
