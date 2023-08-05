@@ -5,6 +5,9 @@ def register_user_handlers(dp: Dispatcher):
     # coffeon
     @dp.message_handler(commands=['coffeeon'])
     async def send_welcome(message: types.Message):
+      arguments = message.get_args()
+      print('DEBUG args=',arguments)
+      print('DEBUG types.Message',types.Message)
       await message.reply("Hi!\nThis is coffeon command!")
       user_id=int(str(message.chat.id).replace(" ", ""))
       print('DEBUG user id=',user_id)
@@ -38,7 +41,7 @@ def register_user_handlers(dp: Dispatcher):
       find_user = fetchall(f"SELECT cur_status FROM users WHERE id = {message.chat.id}")
       if find_user:
         if len(find_user) != 0:
-          print('find_user=',find_user)
+          print('DEBUG find_user=',find_user)
           if find_user[0]==0:
             await message.answer('Текущий статус on')
           else:

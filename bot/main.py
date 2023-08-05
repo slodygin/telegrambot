@@ -7,6 +7,7 @@ from bot.misc import TgKeys
 from bot.handlers import register_all_handlers
 from bot.database.models import register_models
 from bot.database import get_connection
+bot = None
 
 async def __on_start_up(dp: Dispatcher) -> None:
     register_all_filters(dp)
@@ -16,6 +17,10 @@ async def __on_start_up(dp: Dispatcher) -> None:
 
 
 def start_bot():
+    global bot
     bot = Bot(token=TgKeys.TOKEN, parse_mode='HTML')
     dp = Dispatcher(bot, storage=MemoryStorage())
     executor.start_polling(dp, skip_updates=True, on_startup=__on_start_up)
+
+def get_bot():
+    return bot
