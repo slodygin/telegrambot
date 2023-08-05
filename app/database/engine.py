@@ -1,62 +1,46 @@
 # todo: Database engine
 import sqlite3
-
-connection = None
-cursor = None
-
-
-def get_connection():
-    global connection
-    global cursor
-    if not connection:
-        connection = sqlite3.connect("sqlite3.db")
-    if not cursor:
-        cursor = connection.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS users (id VARCHAR(255), cur_status INTEGER);")
-    connection.commit()
-    cursor.execute("CREATE TABLE IF NOT EXISTS schedule (description VARCHAR(255));")
-    connection.commit()
-    print("DEBUG: connection1=", connection)
-    print("DEBUG: cursor1=", cursor)
-    return connection, cursor
+from contextlib import contextmanager
+from typing import Any, LiteralString
 
 
-def fetchone(sql, values=None):
-    conn, cur = get_connection()
-    cur = conn.cursor()
-    print("DEBUG connection=",conn)
-    print("DEBUG values=",values)
-    if values == None:
-        cur.execute(sql)
-    else:
-        cur.execute(sql, values)
-    #conn.close()
-    return cur.fetchone()
+class SQLite:
+    def __init__(self, database: str):
+        self.__database = database
 
+    @contextmanager
+    def connection(self, autocommit: bool = True):
+        connection = sqlite3.connect(self.__database)
+        try:
+            yield connection
+        finally:
+            if autocommit:
+                connection.commit()
+            connection.close()
 
-def fetchall(sql, values=None):
-    conn, cur = get_connection()
-    cur = conn.cursor()
-    print("DEBUG connection=",conn)
-    print("DEBUG values=",values)
-    if values == None:
-        cur.execute(sql)
-    else:
-        cur.execute(sql, values)
-    #conn.close()
-    return cur.fetchall()
+    @contextmanager
+    def cursor(self, connection: sqlite3.Connection | None = None):
+        _connection = sqlite3.connect(self.__database) if connection is None else connection
+        cursor = _connection.cursor()
+        try:
+            yield cursor
+        finally:
+            cursor.close()
+            if connection is None:
+                _connection.close()
 
+    def fetchone(self, sql: LiteralString, values: tuple[Any, ...] | None = None) -> Any:
+        with self.cursor() as cursor:
+            cursor.execute(sql, values or ())
+            return cursor.fetchone()
 
-def execute(sql, values=None):
-    conn, cur = get_connection()
-    cur = conn.cursor()
-    print("DEBUG connection=",conn)
-    print("DEBUG values=",values)
-    if values == None:
-        cur.execute(sql)
-    else:
-        cur.execute(sql, values)
-    conn.commit()
-    #conn.close()
-    print("DEBUG ",cur.rowcount, "records affected")
-    return cur.rowcount
+    def fetchall(self, sql: LiteralString, values: tuple[Any, ...] | None = None):
+        with self.cursor() as cursor:
+            cursor.execute(sql, values or ())
+            return cursor.fetchall()
+
+    def execute(self, sql: LiteralString, values: tuple[Any, ...] | None = None) -> int:
+        with self.connection() as connection:
+            with self.cursor(connection) as cursor:
+                cursor.execute(sql, values or ())
+                return cursor.rowcount

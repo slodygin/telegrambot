@@ -1,7 +1,7 @@
 from aiogram.types import Message
 
 from app.controls import dispatcher as dp
-from app.database.engine import execute, fetchall, fetchone
+from app.controls import sqlite
 
 
 # coffeon
@@ -13,13 +13,15 @@ async def coffeeon_command(message: Message):
     await message.reply("Hi!\nThis is coffeon command!")
     user_id=int(str(message.chat.id).replace(" ", ""))
     print("DEBUG user id=",user_id)
-    find_user = fetchall(f"SELECT cur_status FROM users WHERE id = {message.chat.id}")
+    find_user = sqlite.fetchall(
+        "SELECT cur_status FROM users WHERE id = ?", (message.from_user.id,)
+    )
     if find_user:
         if len(find_user) == 0:
-            execute(f"INSERT INTO users VALUES ('{message.chat.id}', '0')")
+            sqlite.execute("INSERT INTO users VALUES (?, 0)", (message.from_user.id,))
             await message.answer("Пользователь не найден в бд. Меняем на on.")
         else:
-            execute(f"UPDATE users set cur_status=0 where id={message.chat.id}")
+            sqlite.execute("UPDATE users set cur_status = 0 where id = ?", (message.from_user.id,))
             await message.answer("Пользователь найден в бд. Меняем на on.")
 
 
@@ -28,12 +30,14 @@ async def coffeeon_command(message: Message):
 async def coffeeoff_command(message: Message):
     await message.reply("Hi!\nThis is coffeoff command!")
     print("DEBUG user id=",message.chat.id)
-    find_user = fetchall(f"SELECT cur_status FROM users WHERE id = {message.chat.id}")
+    find_user = sqlite.fetchall(
+        "SELECT cur_status FROM users WHERE id = ?", (message.from_user.id,)
+    )
     if find_user and len(find_user) > 0:
-        execute(f"UPDATE users set cur_status=1 where id={message.chat.id}")
+        sqlite.execute("UPDATE users set cur_status = 1 where id = ?", (message.from_user.id,))
         await message.answer("Пользователь найден в бд. Меняем на off.")
     else:
-        execute(f"INSERT INTO users VALUES ('{message.chat.id}', '1')")
+        sqlite.execute("INSERT INTO users VALUES (?, 1)", (message.from_user.id,))
         await message.answer("Пользователь не найден в бд. Меняем на off.")
 
 
@@ -42,7 +46,9 @@ async def coffeeoff_command(message: Message):
 async def coffeestatus_command(message: Message):
     await message.reply("Hi!\nThis is coffeestatus command!")
     print("DEBUG user id=",message.chat.id)
-    find_user = fetchone(f"SELECT cur_status FROM users WHERE id = {message.chat.id}")
+    find_user = sqlite.fetchone(
+        "SELECT cur_status FROM users WHERE id = ?", (message.from_user.id,)
+    )
     if find_user:
         if len(find_user) != 0:
             print("DEBUG find_user=",find_user)
