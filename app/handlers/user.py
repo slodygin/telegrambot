@@ -1,18 +1,22 @@
+import logging
+
 from aiogram.types import Message
 
 from app.controls import dispatcher as dp
 from app.controls import sqlite
+
+logger = logging.getLogger(__name__)
 
 
 # coffeon
 @dp.message_handler(commands=["coffeeon"])
 async def coffeeon_command(message: Message):
     arguments = message.get_args()
-    print("DEBUG args=", arguments)
-    print("DEBUG types.Message", Message)
+    logger.debug("args=", arguments)
+    logger.debug("types.Message", Message)
     await message.reply("Hi!\nThis is coffeon command!")
     user_id=int(str(message.chat.id).replace(" ", ""))
-    print("DEBUG user id=",user_id)
+    logger.debug("user id=",user_id)
     find_user = sqlite.fetchall(
         "SELECT cur_status FROM users WHERE id = ?", (message.from_user.id,)
     )
@@ -29,7 +33,7 @@ async def coffeeon_command(message: Message):
 @dp.message_handler(commands=["coffeeoff"])
 async def coffeeoff_command(message: Message):
     await message.reply("Hi!\nThis is coffeoff command!")
-    print("DEBUG user id=",message.chat.id)
+    logger.debug("user id=",message.chat.id)
     find_user = sqlite.fetchall(
         "SELECT cur_status FROM users WHERE id = ?", (message.from_user.id,)
     )
@@ -45,13 +49,13 @@ async def coffeeoff_command(message: Message):
 @dp.message_handler(commands=["coffeestatus"])
 async def coffeestatus_command(message: Message):
     await message.reply("Hi!\nThis is coffeestatus command!")
-    print("DEBUG user id=",message.chat.id)
+    logger.debug("user id=",message.chat.id)
     find_user = sqlite.fetchone(
         "SELECT cur_status FROM users WHERE id = ?", (message.from_user.id,)
     )
     if find_user:
         if len(find_user) != 0:
-            print("DEBUG find_user=",find_user)
+            logger.debug("find_user=",find_user)
             if find_user[0]==0:
                 await message.answer("Текущий статус on")
             else:
