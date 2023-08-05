@@ -34,7 +34,7 @@ class SQLite:
             cursor.execute(sql, values or ())
             return cursor.fetchone()
 
-    def fetchall(self, sql: LiteralString, values: tuple[Any, ...] | None = None):
+    def fetchall(self, sql: LiteralString, values: tuple[Any, ...] | None = None) -> list[Any]:
         with self.cursor() as cursor:
             cursor.execute(sql, values or ())
             return cursor.fetchall()
