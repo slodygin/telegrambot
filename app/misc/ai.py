@@ -34,3 +34,33 @@ def generate_image(text: str | None):
         # returning the URL of one image as
         # we are generating only one image
         return res["data"][0]["url"]
+
+def edit_image(text: str | None):
+        imageName="photo"
+        maskName="mask"
+        if text and openai.api_key is not None:
+          response = openai.Image.create_edit(
+            image = open("/home/lodygin/git/telegrambot/{}.png".format(imageName), "rb"),
+            mask = open("/home/lodygin/git/telegrambot/{}.png".format(maskName), "rb"),
+            prompt = text,
+            n = 1,
+            size = "1024x1024",
+          )
+          image_url = response['data'][0]["url"]
+          print("image_url=",image_url)
+          return image_url
+
+def edit_image2(text: str | None):
+        imageName="photo"
+        maskName="mask"
+        if text and openai.api_key is not None:
+          response = openai.Image.create_edit(
+            image = open("/home/lodygin/git/telegrambot/{}.png".format(imageName), "rb"),
+            mask = open("/home/lodygin/git/telegrambot/{}2.png".format(maskName), "rb"),
+            prompt = text,
+            n = 1,
+            size = "1024x1024",
+          )
+          image_url = response['data'][0]["url"]
+          print("image_url=",image_url)
+          return image_url
